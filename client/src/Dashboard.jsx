@@ -46,7 +46,7 @@ const Dashboard = () => {
   const fetchGroups = async () => {
     try {
       if (!user) return;
-      const res = await axios.get(`http://127.0.0.1:5001/api/groups/user/${user.id}`);
+      const res = await axios.get(`https://moneymend-api.onrender.com//api/groups/user/${user.id}`);
       setGroups(res.data);
       if (res.data.length > 0 && !selectedGroupId) {
         handleSelectGroup(res.data[0]._id);
@@ -61,14 +61,14 @@ const Dashboard = () => {
     setSelectedGroupId(groupId);
     if (isMobile) setIsSidebarOpen(false); // Auto-close on mobile selection
     try {
-      const res = await axios.get(`http://127.0.0.1:5001/api/groups/${groupId}`);
+      const res = await axios.get(`https://moneymend-api.onrender.com//api/groups/${groupId}`);
       setDashboardData(res.data);
     } catch (err) { console.error(err); }
   };
 
   const handleCreateGroup = async (groupName) => {
     try {
-      const res = await axios.post('http://127.0.0.1:5001/api/groups/create', { name: groupName, userId: user.id });
+      const res = await axios.post('https://moneymend-api.onrender.com//api/groups/create', { name: groupName, userId: user.id });
       setGroups([...groups, res.data]);
       handleSelectGroup(res.data._id);
     } catch (err) { alert("Failed to create group"); }
@@ -77,7 +77,7 @@ const Dashboard = () => {
   const handleInviteMember = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://127.0.0.1:5001/api/groups/invite', { groupId: selectedGroupId, email: newMemberEmail, invitedByName: user.name });
+      await axios.post('https://moneymend-api.onrender.com//api/groups/invite', { groupId: selectedGroupId, email: newMemberEmail, invitedByName: user.name });
       alert(`Invitation sent to ${newMemberEmail}!`);
       setShowInviteModal(false);
       setNewMemberEmail('');
@@ -86,7 +86,7 @@ const Dashboard = () => {
 
   const handleLeaveGroupConfirm = async () => {
     try {
-        await axios.post('http://127.0.0.1:5001/api/groups/leave', { groupId: selectedGroupId, userId: user.id });
+        await axios.post('https://moneymend-api.onrender.com//api/groups/leave', { groupId: selectedGroupId, userId: user.id });
         setShowLeaveModal(false);
         window.location.reload(); 
     } catch (err) { alert("Failed to leave group"); }
@@ -114,7 +114,7 @@ const Dashboard = () => {
     e.preventDefault();
     if (newExpense.splitBetween.length === 0) { alert("Split cannot be empty!"); return; }
     try {
-      await axios.post('http://127.0.0.1:5001/api/expense', {
+      await axios.post('https://moneymend-api.onrender.com//api/expense', {
         description: newExpense.description, amount: Number(newExpense.amount), date: new Date().toISOString(),
         group: selectedGroupId, paidBy: newExpense.paidBy, category: newExpense.category, splitBetween: newExpense.splitBetween
       });
@@ -126,7 +126,7 @@ const Dashboard = () => {
   const handleDeleteExpense = async (expenseId) => {
       if(!window.confirm("Delete this expense?")) return;
       try {
-          await axios.delete(`http://127.0.0.1:5001/api/expense/${expenseId}`);
+          await axios.delete(`https://moneymend-api.onrender.com//api/expense/${expenseId}`);
           handleSelectGroup(selectedGroupId);
       } catch (err) { alert("Failed to delete"); }
   };

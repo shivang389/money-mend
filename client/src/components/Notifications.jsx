@@ -9,7 +9,7 @@ const Notifications = ({ userId, onUpdate }) => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get(`http://127.0.0.1:5001/api/groups/notifications/${userId}`);
+      const res = await axios.get(`https://moneymend-api.onrender.com//api/groups/notifications/${userId}`);
       setInvites(res.data);
     } catch (err) {
       console.error("Failed to fetch notifications");
@@ -35,7 +35,7 @@ const Notifications = ({ userId, onUpdate }) => {
 
   const handleRespond = async (groupId, action) => {
     try {
-      await axios.post('http://127.0.0.1:5001/api/groups/respond', { userId, groupId, action });
+      await axios.post('https://moneymend-api.onrender.com//api/groups/respond', { userId, groupId, action });
       fetchNotifications();
       if (onUpdate) onUpdate(); 
     } catch (err) {

@@ -19,7 +19,7 @@ const Auth = () => {
     const endpoint = isLogin ? '/login' : '/register';
     
     try {
-      const { data } = await axios.post(`http://127.0.0.1:5001/api/auth${endpoint}`, formData);
+      const { data } = await axios.post(`https://moneymend-api.onrender.com//api/auth${endpoint}`, formData);
       localStorage.setItem('user', JSON.stringify(data.user));
       
       setTimeout(() => {

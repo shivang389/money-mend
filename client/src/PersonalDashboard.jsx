@@ -43,7 +43,7 @@ const PersonalDashboard = () => {
   const fetchGroups = async () => {
     try {
       if (!user) return;
-      const res = await axios.get(`http://127.0.0.1:5001/api/groups/user/${user.id}`);
+      const res = await axios.get(`https://moneymend-api.onrender.com//api/groups/user/${user.id}`);
       setGroups(res.data);
     } catch (err) { console.error(err); }
   };
@@ -51,7 +51,7 @@ const PersonalDashboard = () => {
   const fetchPersonalData = async () => {
       try {
           if (!user) return;
-          const res = await axios.get(`http://127.0.0.1:5001/api/expense/personal/${user.id}`);
+          const res = await axios.get(`https://moneymend-api.onrender.com//api/expense/personal/${user.id}`);
           setPersonalData(res.data);
       } catch(err) { console.error(err); } 
       finally { setLoading(false); }
@@ -60,7 +60,7 @@ const PersonalDashboard = () => {
   const handleAddExpense = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://127.0.0.1:5001/api/expense', {
+      await axios.post('https://moneymend-api.onrender.com//api/expense', {
         description: newExpense.description, 
         amount: Number(newExpense.amount), 
         date: new Date().toISOString(),
@@ -78,7 +78,7 @@ const PersonalDashboard = () => {
   const handleDeleteExpense = async (expenseId) => {
       if(!window.confirm("Delete this expense?")) return;
       try {
-          await axios.delete(`http://127.0.0.1:5001/api/expense/${expenseId}`);
+          await axios.delete(`https://moneymend-api.onrender.com//api/expense/${expenseId}`);
           fetchPersonalData();
       } catch (err) { alert("Failed to delete"); }
   };

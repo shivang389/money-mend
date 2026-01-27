@@ -15,7 +15,7 @@ const Signup = () => {
     setError('');
 
     try {
-      await axios.post('http://127.0.0.1:5001/api/auth/register', { name, email, password });
+      await axios.post('https://moneymend-api.onrender.com//api/auth/register', { name, email, password });
       // Redirect to login after successful signup
       navigate('/'); 
     } catch (err) {
