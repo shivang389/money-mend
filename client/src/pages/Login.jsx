@@ -15,7 +15,7 @@ const Login = () => {
     
     try {
       // Use Localhost for now (Switch to Render URL when deploying)
-      const res = await axios.post('https://moneymend-api.onrender.com//api/auth/login', { email, password });
+      const res = await axios.post('https://moneymend-api.onrender.com/api/auth/login', { email, password });
       
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));

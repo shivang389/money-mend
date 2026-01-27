@@ -11,7 +11,7 @@ const ForgotPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('https://moneymend-api.onrender.com//api/auth/forgot-password', { email });
+      const res = await axios.post('https://moneymend-api.onrender.com/api/auth/forgot-password', { email });
       setMessage(res.data.msg);
     } catch (err) {
       setMessage("Error: " + (err.response?.data?.msg || "Failed to send email"));

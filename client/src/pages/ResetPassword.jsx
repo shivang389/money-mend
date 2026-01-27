@@ -12,7 +12,7 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.put(`https://moneymend-api.onrender.com//api/auth/reset-password/${token}`, { password });
+      const res = await axios.put(`https://moneymend-api.onrender.com/api/auth/reset-password/${token}`, { password });
       setMessage("Success! Redirecting to login...");
       setTimeout(() => navigate('/'), 2000);
     } catch (err) {
