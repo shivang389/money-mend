@@ -5,8 +5,13 @@ const User = require('../models/User');
 // 1. CREATE GROUP
 exports.createGroup = async (req, res) => {
   try {
-    const { name, userId } = req.body;
-    const group = new Group({ name, members: [userId], admin: userId });
+    const { name } = req.body;
+    // We use req.user.id (from the token) as the creator/admin
+    const group = new Group({ 
+        name, 
+        members: [req.user.id], 
+        admin: req.user.id 
+    });
     await group.save();
     res.json(group);
   } catch (err) {
@@ -14,10 +19,15 @@ exports.createGroup = async (req, res) => {
   }
 };
 
-// 2. GET USER'S GROUPS
+// 2. GET USER'S GROUPS (FIXED)
 exports.getUserGroups = async (req, res) => {
   try {
-    const groups = await Group.find({ members: req.params.userId });
+    // FIX 1: Use req.user.id (from the Auth Token)
+    // FIX 2: .populate() fetches the NAMES of the members
+    const groups = await Group.find({ members: req.user.id })
+      .populate('members', 'name email')
+      .sort({ date: -1 });
+
     res.json(groups);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -31,8 +41,8 @@ exports.getGroupDetails = async (req, res) => {
     if (!group) return res.status(404).json({ msg: "Group not found" });
 
     const expenses = await Expense.find({ group: req.params.groupId })
-                                  .populate('paidBy', 'name')
-                                  .sort({ date: -1 });
+      .populate('paidBy', 'name')
+      .sort({ date: -1 });
 
     // Calculate Debts (Simplified)
     let balances = {};
@@ -43,10 +53,14 @@ exports.getGroupDetails = async (req, res) => {
       const amount = exp.amount;
       const splitCount = exp.splitBetween.length;
       
-      balances[paidBy] += amount;
-      exp.splitBetween.forEach(memberId => {
-        balances[memberId] -= (amount / splitCount);
-      });
+      if (splitCount > 0) {
+          balances[paidBy] += amount;
+          exp.splitBetween.forEach(memberId => {
+            if (balances[memberId] !== undefined) {
+                balances[memberId] -= (amount / splitCount);
+            }
+          });
+      }
     });
 
     const debts = [];

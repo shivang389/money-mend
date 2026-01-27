@@ -81,6 +81,8 @@ const Dashboard = () => {
       alert(`Invitation sent to ${newMemberEmail}!`);
       setShowInviteModal(false);
       setNewMemberEmail('');
+      // Refresh data to show new member immediately (optional)
+      handleSelectGroup(selectedGroupId);
     } catch (err) { alert(err.response?.data?.msg || 'Failed to invite user'); }
   };
 
@@ -95,7 +97,11 @@ const Dashboard = () => {
   const openExpenseModal = () => {
       if (!dashboardData) return;
       setNewExpense({
-          description: '', amount: '', category: 'Food', paidBy: user.id,
+          description: '', 
+          amount: '', 
+          category: 'Food', 
+          paidBy: user.id,
+          // Initialize split with ALL members
           splitBetween: dashboardData.members.map(m => m._id)
       });
       setShowExpenseModal(true);
@@ -115,11 +121,16 @@ const Dashboard = () => {
     if (newExpense.splitBetween.length === 0) { alert("Split cannot be empty!"); return; }
     try {
       await axios.post('https://moneymend-api.onrender.com/api/expense', {
-        description: newExpense.description, amount: Number(newExpense.amount), date: new Date().toISOString(),
-        group: selectedGroupId, paidBy: newExpense.paidBy, category: newExpense.category, splitBetween: newExpense.splitBetween
+        description: newExpense.description, 
+        amount: Number(newExpense.amount), 
+        date: new Date().toISOString(),
+        group: selectedGroupId, 
+        paidBy: newExpense.paidBy, 
+        category: newExpense.category, 
+        splitBetween: newExpense.splitBetween
       });
       setShowExpenseModal(false);
-      handleSelectGroup(selectedGroupId);
+      handleSelectGroup(selectedGroupId); // Refresh dashboard
     } catch (err) { alert("Failed to add expense"); }
   };
 
@@ -136,8 +147,7 @@ const Dashboard = () => {
   return (
     <div className="flex min-h-screen bg-[#0B0B15] text-white font-sans selection:bg-purple-500/30 overflow-x-hidden">
       
-      {/* --- SIDEBAR WRAPPER (FIXED) --- */}
-      {/* overflow-hidden ensures content is clipped when width is 0 */}
+      {/* --- SIDEBAR --- */}
       <div 
         className={`
             fixed md:relative z-40 h-full bg-[#0F0F1A] border-r border-white/5 transition-all duration-300 ease-in-out overflow-hidden
@@ -302,17 +312,34 @@ const Dashboard = () => {
                         <input type="text" placeholder="Desc" className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-white" value={newExpense.description} onChange={e => setNewExpense({...newExpense, description: e.target.value})} required />
                         <input type="number" placeholder="Amount" className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-white" value={newExpense.amount} onChange={e => setNewExpense({...newExpense, amount: e.target.value})} required />
                     </div>
-                    <select className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-white" value={newExpense.paidBy} onChange={e => setNewExpense({...newExpense, paidBy: e.target.value})}>
-                        {dashboardData?.members.map(m => (<option key={m._id} value={m._id}>{m._id === user.id ? "Me" : m.name}</option>))}
-                    </select>
-                    <select className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-white" value={newExpense.category} onChange={e => setNewExpense({...newExpense, category: e.target.value})}><option>Food</option><option>Travel</option><option>Rent</option><option>Fun</option><option>Other</option></select>
-                    <div className="grid grid-cols-2 gap-2 bg-black/20 p-2 rounded-xl border border-white/5 max-h-32 overflow-y-auto">
-                        {dashboardData?.members.map(m => (
-                            <button type="button" key={m._id} onClick={() => toggleSplitUser(m._id)} className={`flex items-center gap-2 p-2 rounded-lg text-xs font-bold ${newExpense.splitBetween.includes(m._id) ? 'bg-pink-500/20 text-pink-400' : 'bg-white/5 text-gray-500'}`}>
-                                {newExpense.splitBetween.includes(m._id) ? <CheckCircle2 size={14}/> : <Circle size={14}/>} {m.name}
-                            </button>
-                        ))}
+                    
+                    {/* PAID BY DROPDOWN (FIXED) */}
+                    <div>
+                        <label className="text-xs text-gray-400 ml-1 mb-1 block">Paid By</label>
+                        <select className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-white" value={newExpense.paidBy} onChange={e => setNewExpense({...newExpense, paidBy: e.target.value})}>
+                            {dashboardData?.members.map(m => (
+                                <option key={m._id} value={m._id}>
+                                    {m._id === user.id ? "Me" : (m.name || m.email)}
+                                </option>
+                            ))}
+                        </select>
                     </div>
+
+                    <select className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-white" value={newExpense.category} onChange={e => setNewExpense({...newExpense, category: e.target.value})}><option>Food</option><option>Travel</option><option>Rent</option><option>Fun</option><option>Other</option></select>
+                    
+                    {/* SPLIT BETWEEN LIST (FIXED) */}
+                    <div>
+                        <label className="text-xs text-gray-400 ml-1 mb-1 block">Split Between</label>
+                        <div className="grid grid-cols-2 gap-2 bg-black/20 p-2 rounded-xl border border-white/5 max-h-32 overflow-y-auto custom-scrollbar">
+                            {dashboardData?.members.map(m => (
+                                <button type="button" key={m._id} onClick={() => toggleSplitUser(m._id)} className={`flex items-center gap-2 p-2 rounded-lg text-xs font-bold transition-all ${newExpense.splitBetween.includes(m._id) ? 'bg-pink-500/20 text-pink-400' : 'bg-white/5 text-gray-500 hover:bg-white/10'}`}>
+                                    {newExpense.splitBetween.includes(m._id) ? <CheckCircle2 size={14}/> : <Circle size={14}/>} 
+                                    <span className="truncate">{m.name || m.email}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     <div className="flex gap-3"><button type="button" onClick={() => setShowExpenseModal(false)} className="flex-1 py-3 bg-white/5 rounded-xl text-gray-400 font-bold">Cancel</button><button type="submit" className="flex-1 py-3 bg-pink-600 text-white font-bold rounded-xl">Add</button></div>
                 </form>
             </div>

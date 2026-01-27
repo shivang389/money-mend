@@ -9,6 +9,7 @@ const Notifications = ({ userId, onUpdate }) => {
 
   const fetchNotifications = async () => {
     try {
+      // Ensure this matches your live backend URL
       const res = await axios.get(`https://moneymend-api.onrender.com/api/groups/notifications/${userId}`);
       setInvites(res.data);
     } catch (err) {
@@ -58,6 +59,10 @@ const Notifications = ({ userId, onUpdate }) => {
       </button>
 
       {isOpen && (
+        // --- FIXES APPLIED HERE ---
+        // z-[100]: Ensures it sits on top of everything (even sidebar/modals)
+        // max-h-80: Increased height limit slightly so it is less cramped
+        // overflow-y-auto: Ensures scrollbar appears if needed
         <div className="absolute left-0 mt-4 w-72 bg-[#1A1A2E] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-200 origin-top-left">
             <div className="p-4 border-b border-white/5 bg-white/5">
                 <h3 className="font-bold text-white flex items-center gap-2 text-sm">
@@ -65,7 +70,7 @@ const Notifications = ({ userId, onUpdate }) => {
                 </h3>
             </div>
             
-            <div className="max-h-64 overflow-y-auto custom-scrollbar">
+            <div className="max-h-80 overflow-y-auto custom-scrollbar">
                 {invites.length === 0 ? (
                 <div className="p-6 text-center text-gray-500 text-xs">
                     You're all caught up!
