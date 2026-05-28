@@ -43,7 +43,6 @@ const Dashboard = () => {
     }
   };
 
-  // 🌟 HELPER TO GET FRESH TOKEN 🌟
   // 🌟 BULLETPROOF TOKEN HELPER 🌟
   const getTokenConfig = () => {
     let token = localStorage.getItem('token') || '';
@@ -54,6 +53,26 @@ const Dashboard = () => {
     }
     
     return { headers: { Authorization: `Bearer ${token}` } };
+  };
+
+  // 🌟 THE MISSING FUNCTION HAS BEEN RESTORED HERE 🌟
+  const fetchGroups = async () => {
+    try {
+      if (!user) return;
+      const res = await axios.get(
+        `https://moneymend-api.onrender.com/api/groups/user/${user.id}`, 
+        getTokenConfig()
+      );
+      setGroups(res.data);
+      if (res.data.length > 0 && !selectedGroupId) {
+        handleSelectGroup(res.data[0]._id);
+      } else if (res.data.length === 0) {
+        setDashboardData(null);
+        setSelectedGroupId(null);
+      }
+    } catch (err) { 
+      console.error(err); 
+    }
   };
 
   const handleSelectGroup = async (groupId) => {
