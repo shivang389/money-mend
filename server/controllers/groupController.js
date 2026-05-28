@@ -141,3 +141,14 @@ exports.leaveGroup = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+// 6. GET NOTIFICATIONS (🌟 ADDED TO FIX CRASH)
+exports.getNotifications = async (req, res) => {
+  try {
+    // Returns a safe empty array structure so the frontend 
+    // doesn't break, and the backend exports match perfectly.
+    res.status(200).json({ success: true, notifications: [] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

@@ -5,6 +5,10 @@ const groupController = require('../controllers/groupController');
 // Define Routes and map them to Controller functions
 router.post('/create', groupController.createGroup);
 router.get('/user/:userId', groupController.getUserGroups);
+
+// 🌟 FIXED: Added the missing notifications route ABOVE the generic /:groupId route
+router.get('/notifications/:groupId', groupController.getNotifications);
+
 router.get('/:groupId', groupController.getGroupDetails);
 router.post('/invite', groupController.inviteMember);
 router.post('/leave', groupController.leaveGroup);
