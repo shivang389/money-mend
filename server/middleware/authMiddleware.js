@@ -4,7 +4,7 @@ const auth = (req, res, next) => {
   try {
     const token = req.header("Authorization");
 
-    // 🌟 FIXED: Safely grab the fallback ID without crashing if req.body doesn't exist
+    // Safely grab the fallback ID without crashing
     const fallbackId = (req.body && req.body.userId) 
         ? req.body.userId 
         : (req.params && req.params.userId ? req.params.userId : null);
@@ -14,20 +14,17 @@ const auth = (req, res, next) => {
         return next();
     }
 
-    // Clean the token up
     let formattedToken = token.startsWith("Bearer ") ? token.slice(7, token.length) : token;
     formattedToken = formattedToken.replace(/"/g, '').trim(); 
 
-    // Decode the token ignoring the secret
     const decodedUser = jwt.decode(formattedToken);
 
-    // Attach the user safely
     req.user = { id: (decodedUser && decodedUser.id) ? decodedUser.id : fallbackId };
     
     next(); 
     
   } catch (err) {
-    // 🌟 FIXED: Absolutely no crashing allowed in the catch block either
+    // 🌟 THIS IS THE FIX: No crashing allowed here, and no old console.logs
     const fallbackId = (req.body && req.body.userId) 
         ? req.body.userId 
         : (req.params && req.params.userId ? req.params.userId : null);
