@@ -7,10 +7,23 @@ const Notifications = ({ userId, onUpdate }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  // 🌟 BULLETPROOF TOKEN HELPER 🌟
+  const getTokenConfig = () => {
+    let token = localStorage.getItem('token') || '';
+    // Safely strip extra quotes if the browser saved them
+    if (token.startsWith('"') && token.endsWith('"')) {
+      token = token.slice(1, -1);
+    }
+    return { headers: { Authorization: `Bearer ${token}` } };
+  };
+
   const fetchNotifications = async () => {
     try {
-      // Ensure this matches your live backend URL
-      const res = await axios.get(`https://moneymend-api.onrender.com/api/groups/notifications/${userId}`);
+      // 🌟 ADDED SECURE TOKEN HEADER HERE
+      const res = await axios.get(
+        `https://moneymend-api.onrender.com/api/groups/notifications/${userId}`,
+        getTokenConfig()
+      );
       setInvites(res.data);
     } catch (err) {
       console.error("Failed to fetch notifications");
@@ -36,7 +49,12 @@ const Notifications = ({ userId, onUpdate }) => {
 
   const handleRespond = async (groupId, action) => {
     try {
-      await axios.post('https://moneymend-api.onrender.com/api/groups/respond', { userId, groupId, action });
+      // 🌟 ADDED SECURE TOKEN HEADER HERE
+      await axios.post(
+        'https://moneymend-api.onrender.com/api/groups/respond', 
+        { userId, groupId, action },
+        getTokenConfig()
+      );
       fetchNotifications();
       if (onUpdate) onUpdate(); 
     } catch (err) {
@@ -59,10 +77,6 @@ const Notifications = ({ userId, onUpdate }) => {
       </button>
 
       {isOpen && (
-        // --- FIXES APPLIED HERE ---
-        // z-[100]: Ensures it sits on top of everything (even sidebar/modals)
-        // max-h-80: Increased height limit slightly so it is less cramped
-        // overflow-y-auto: Ensures scrollbar appears if needed
         <div className="absolute left-0 mt-4 w-72 bg-[#1A1A2E] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-200 origin-top-left">
             <div className="p-4 border-b border-white/5 bg-white/5">
                 <h3 className="font-bold text-white flex items-center gap-2 text-sm">
