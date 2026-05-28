@@ -4,7 +4,7 @@ const groupController = require('../controllers/groupController');
 
 // 🌟 1. IMPORT YOUR AUTH MIDDLEWARE
 // Note: Double check that this path matches your actual middleware folder/file!
-const auth = require('../middleware/authMiddleware'); 
+const auth = require('../middleware/authMiddleware.js'); 
 
 // 🌟 2. ADD THE 'auth' GUARD TO YOUR ROUTES
 // Now, Express will verify the token and populate req.user BEFORE running the controller
