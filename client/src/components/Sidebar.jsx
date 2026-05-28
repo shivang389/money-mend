@@ -32,7 +32,6 @@ const Sidebar = ({ groups, onSelectGroup, onCreateGroup, selectedGroupId, onClos
         
         {/* HEADER */}
         <div className="mb-8 px-2 flex justify-between items-center relative z-30">
-          {/* UPDATED NAME HERE */}
           <h1 
               className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 cursor-pointer select-none" 
               onClick={() => navigate('/dashboard')}
@@ -52,7 +51,8 @@ const Sidebar = ({ groups, onSelectGroup, onCreateGroup, selectedGroupId, onClos
         <nav className="flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-2 relative z-10">
           <button 
               type="button"
-              onClick={() => navigate('/personal')}
+              // 🌟 FIXED: Replaced navigate() with onSelectGroup()
+              onClick={() => onSelectGroup('personal')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${
                   selectedGroupId === 'personal' 
                   ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
@@ -70,7 +70,7 @@ const Sidebar = ({ groups, onSelectGroup, onCreateGroup, selectedGroupId, onClos
               <button
                 key={group._id}
                 type="button"
-                onClick={() => { navigate('/dashboard'); onSelectGroup(group._id); }}
+                onClick={() => onSelectGroup(group._id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${
                   selectedGroupId === group._id 
                   ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/50' 

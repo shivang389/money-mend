@@ -46,16 +46,13 @@ const Dashboard = () => {
   // 🌟 BULLETPROOF TOKEN HELPER 🌟
   const getTokenConfig = () => {
     let token = localStorage.getItem('token') || '';
-    
-    // Automatically strip any accidental quote marks from the start and end
     if (token.startsWith('"') && token.endsWith('"')) {
         token = token.slice(1, -1);
     }
-    
     return { headers: { Authorization: `Bearer ${token}` } };
   };
 
-  // 🌟 THE MISSING FUNCTION HAS BEEN RESTORED HERE 🌟
+  // 🌟 FETCH GROUPS (RESTORED) 🌟
   const fetchGroups = async () => {
     try {
       if (!user) return;
@@ -78,8 +75,14 @@ const Dashboard = () => {
   const handleSelectGroup = async (groupId) => {
     setSelectedGroupId(groupId);
     if (isMobile) setIsSidebarOpen(false); // Auto-close on mobile selection
+    
+    // 🌟 FIXED: If Personal Space is clicked, clear dashboard safely
+    if (groupId === 'personal') {
+        setDashboardData(null);
+        return; 
+    }
+
     try {
-      // 🌟 ADDED TOKEN HEADER
       const res = await axios.get(`https://moneymend-api.onrender.com/api/groups/${groupId}`, getTokenConfig());
       setDashboardData(res.data);
     } catch (err) { console.error(err); }
@@ -87,21 +90,28 @@ const Dashboard = () => {
 
   const handleCreateGroup = async (groupName) => {
     try {
-      // 🌟 ADDED TOKEN HEADER
       const res = await axios.post(
         'https://moneymend-api.onrender.com/api/groups/create', 
         { name: groupName, userId: user.id },
         getTokenConfig()
       );
-      setGroups([...groups, res.data]);
-      handleSelectGroup(res.data._id);
-    } catch (err) { alert("Failed to create group"); }
+      
+      // 🌟 FIXED: Refresh the list and safely grab the new group ID
+      await fetchGroups();
+      const newGroupId = res.data.group?._id || res.data._id;
+      
+      if (newGroupId) {
+          handleSelectGroup(newGroupId);
+      }
+    } catch (err) { 
+        console.error(err);
+        alert("Failed to create group"); 
+    }
   };
 
   const handleInviteMember = async (e) => {
     e.preventDefault();
     try {
-      // 🌟 ADDED TOKEN HEADER
       await axios.post(
         'https://moneymend-api.onrender.com/api/groups/invite', 
         { groupId: selectedGroupId, email: newMemberEmail, invitedByName: user.name },
@@ -116,7 +126,6 @@ const Dashboard = () => {
 
   const handleLeaveGroupConfirm = async () => {
     try {
-        // 🌟 ADDED TOKEN HEADER
         await axios.post(
           'https://moneymend-api.onrender.com/api/groups/leave', 
           { groupId: selectedGroupId, userId: user.id },
@@ -152,7 +161,6 @@ const Dashboard = () => {
     e.preventDefault();
     if (newExpense.splitBetween.length === 0) { alert("Split cannot be empty!"); return; }
     try {
-      // 🌟 ADDED TOKEN HEADER
       await axios.post('https://moneymend-api.onrender.com/api/expense', 
         {
           description: newExpense.description, 
@@ -173,7 +181,6 @@ const Dashboard = () => {
   const handleDeleteExpense = async (expenseId) => {
       if(!window.confirm("Delete this expense?")) return;
       try {
-          // 🌟 ADDED TOKEN HEADER
           await axios.delete(`https://moneymend-api.onrender.com/api/expense/${expenseId}`, getTokenConfig());
           handleSelectGroup(selectedGroupId);
       } catch (err) { alert("Failed to delete"); }
