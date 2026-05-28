@@ -6,12 +6,20 @@ const User = require('../models/User');
 exports.createGroup = async (req, res) => {
   try {
     const { name } = req.body;
-    // We use req.user.id (from the token) as the creator/admin
+    
+    // 🌟 BULLETPROOF FIX: Safely grab the ID no matter how it was named in the token
+    const safeUserId = req.user?.id || req.user?._id || req.user?.userId;
+
+    if (!safeUserId) {
+       return res.status(400).json({ msg: "User ID not found in token" });
+    }
+
     const group = new Group({ 
         name, 
-        members: [req.user.id], 
-        admin: req.user.id 
+        members: [safeUserId], 
+        admin: safeUserId 
     });
+    
     await group.save();
     res.json(group);
   } catch (err) {
@@ -22,9 +30,14 @@ exports.createGroup = async (req, res) => {
 // 2. GET USER'S GROUPS (FIXED)
 exports.getUserGroups = async (req, res) => {
   try {
-    // FIX 1: Use req.user.id (from the Auth Token)
-    // FIX 2: .populate() fetches the NAMES of the members
-    const groups = await Group.find({ members: req.user.id })
+    // 🌟 BULLETPROOF FIX: Use the safe ID here as well to fetch the correct groups
+    const safeUserId = req.user?.id || req.user?._id || req.user?.userId;
+
+    if (!safeUserId) {
+        return res.status(400).json({ msg: "User ID not found in token" });
+    }
+
+    const groups = await Group.find({ members: safeUserId })
       .populate('members', 'name email')
       .sort({ date: -1 });
 
@@ -142,11 +155,9 @@ exports.leaveGroup = async (req, res) => {
     }
 };
 
-// 6. GET NOTIFICATIONS (🌟 ADDED TO FIX CRASH)
+// 6. GET NOTIFICATIONS
 exports.getNotifications = async (req, res) => {
   try {
-    // Returns a safe empty array structure so the frontend 
-    // doesn't break, and the backend exports match perfectly.
     res.status(200).json({ success: true, notifications: [] });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -43,10 +43,16 @@ const Dashboard = () => {
     }
   };
 
+  // 🌟 HELPER TO GET FRESH TOKEN 🌟
+  const getTokenConfig = () => {
+    return { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } };
+  };
+
   const fetchGroups = async () => {
     try {
       if (!user) return;
-      const res = await axios.get(`https://moneymend-api.onrender.com/api/groups/user/${user.id}`);
+      // 🌟 ADDED TOKEN HEADER
+      const res = await axios.get(`https://moneymend-api.onrender.com/api/groups/user/${user.id}`, getTokenConfig());
       setGroups(res.data);
       if (res.data.length > 0 && !selectedGroupId) {
         handleSelectGroup(res.data[0]._id);
@@ -61,14 +67,20 @@ const Dashboard = () => {
     setSelectedGroupId(groupId);
     if (isMobile) setIsSidebarOpen(false); // Auto-close on mobile selection
     try {
-      const res = await axios.get(`https://moneymend-api.onrender.com/api/groups/${groupId}`);
+      // 🌟 ADDED TOKEN HEADER
+      const res = await axios.get(`https://moneymend-api.onrender.com/api/groups/${groupId}`, getTokenConfig());
       setDashboardData(res.data);
     } catch (err) { console.error(err); }
   };
 
   const handleCreateGroup = async (groupName) => {
     try {
-      const res = await axios.post('https://moneymend-api.onrender.com/api/groups/create', { name: groupName, userId: user.id });
+      // 🌟 ADDED TOKEN HEADER
+      const res = await axios.post(
+        'https://moneymend-api.onrender.com/api/groups/create', 
+        { name: groupName, userId: user.id },
+        getTokenConfig()
+      );
       setGroups([...groups, res.data]);
       handleSelectGroup(res.data._id);
     } catch (err) { alert("Failed to create group"); }
@@ -77,18 +89,27 @@ const Dashboard = () => {
   const handleInviteMember = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('https://moneymend-api.onrender.com/api/groups/invite', { groupId: selectedGroupId, email: newMemberEmail, invitedByName: user.name });
+      // 🌟 ADDED TOKEN HEADER
+      await axios.post(
+        'https://moneymend-api.onrender.com/api/groups/invite', 
+        { groupId: selectedGroupId, email: newMemberEmail, invitedByName: user.name },
+        getTokenConfig()
+      );
       alert(`Invitation sent to ${newMemberEmail}!`);
       setShowInviteModal(false);
       setNewMemberEmail('');
-      // Refresh data to show new member immediately (optional)
       handleSelectGroup(selectedGroupId);
     } catch (err) { alert(err.response?.data?.msg || 'Failed to invite user'); }
   };
 
   const handleLeaveGroupConfirm = async () => {
     try {
-        await axios.post('https://moneymend-api.onrender.com/api/groups/leave', { groupId: selectedGroupId, userId: user.id });
+        // 🌟 ADDED TOKEN HEADER
+        await axios.post(
+          'https://moneymend-api.onrender.com/api/groups/leave', 
+          { groupId: selectedGroupId, userId: user.id },
+          getTokenConfig()
+        );
         setShowLeaveModal(false);
         window.location.reload(); 
     } catch (err) { alert("Failed to leave group"); }
@@ -101,7 +122,6 @@ const Dashboard = () => {
           amount: '', 
           category: 'Food', 
           paidBy: user.id,
-          // Initialize split with ALL members
           splitBetween: dashboardData.members.map(m => m._id)
       });
       setShowExpenseModal(true);
@@ -120,29 +140,34 @@ const Dashboard = () => {
     e.preventDefault();
     if (newExpense.splitBetween.length === 0) { alert("Split cannot be empty!"); return; }
     try {
-      await axios.post('https://moneymend-api.onrender.com/api/expense', {
-        description: newExpense.description, 
-        amount: Number(newExpense.amount), 
-        date: new Date().toISOString(),
-        group: selectedGroupId, 
-        paidBy: newExpense.paidBy, 
-        category: newExpense.category, 
-        splitBetween: newExpense.splitBetween
-      });
+      // 🌟 ADDED TOKEN HEADER
+      await axios.post('https://moneymend-api.onrender.com/api/expense', 
+        {
+          description: newExpense.description, 
+          amount: Number(newExpense.amount), 
+          date: new Date().toISOString(),
+          group: selectedGroupId, 
+          paidBy: newExpense.paidBy, 
+          category: newExpense.category, 
+          splitBetween: newExpense.splitBetween
+        },
+        getTokenConfig()
+      );
       setShowExpenseModal(false);
-      handleSelectGroup(selectedGroupId); // Refresh dashboard
+      handleSelectGroup(selectedGroupId); 
     } catch (err) { alert("Failed to add expense"); }
   };
 
   const handleDeleteExpense = async (expenseId) => {
       if(!window.confirm("Delete this expense?")) return;
       try {
-          await axios.delete(`https://moneymend-api.onrender.com/api/expense/${expenseId}`);
+          // 🌟 ADDED TOKEN HEADER
+          await axios.delete(`https://moneymend-api.onrender.com/api/expense/${expenseId}`, getTokenConfig());
           handleSelectGroup(selectedGroupId);
       } catch (err) { alert("Failed to delete"); }
   };
 
-  if (!user) return <div className="text-white">Please Login</div>;
+  if (!user) return <div className="text-white flex items-center justify-center h-screen bg-[#0B0B15]">Please Login</div>;
 
   return (
     <div className="flex min-h-screen bg-[#0B0B15] text-white font-sans selection:bg-purple-500/30 overflow-x-hidden">
@@ -313,7 +338,7 @@ const Dashboard = () => {
                         <input type="number" placeholder="Amount" className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-white" value={newExpense.amount} onChange={e => setNewExpense({...newExpense, amount: e.target.value})} required />
                     </div>
                     
-                    {/* PAID BY DROPDOWN (FIXED) */}
+                    {/* PAID BY DROPDOWN */}
                     <div>
                         <label className="text-xs text-gray-400 ml-1 mb-1 block">Paid By</label>
                         <select className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-white" value={newExpense.paidBy} onChange={e => setNewExpense({...newExpense, paidBy: e.target.value})}>
@@ -327,7 +352,7 @@ const Dashboard = () => {
 
                     <select className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-white" value={newExpense.category} onChange={e => setNewExpense({...newExpense, category: e.target.value})}><option>Food</option><option>Travel</option><option>Rent</option><option>Fun</option><option>Other</option></select>
                     
-                    {/* SPLIT BETWEEN LIST (FIXED) */}
+                    {/* SPLIT BETWEEN LIST */}
                     <div>
                         <label className="text-xs text-gray-400 ml-1 mb-1 block">Split Between</label>
                         <div className="grid grid-cols-2 gap-2 bg-black/20 p-2 rounded-xl border border-white/5 max-h-32 overflow-y-auto custom-scrollbar">
